@@ -1,2 +1,2 @@
-aligncommerce-api-python-lib
-============================
+Align Commerce API Python Library
+=================================
