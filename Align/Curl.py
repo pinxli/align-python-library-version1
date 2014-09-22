@@ -36,7 +36,8 @@ class Curl ():
 		self.httpLogin()
 		self.setRequestMethod(method,data)
 		self.setRequestOptions(url)
-		return self.request.perform()
+		self.request.perform()
+		self.request.close()
 		# self.curl_storage.append(curl)
 
 	def setRequestMethod(self,method,data=None):
