@@ -1,4 +1,4 @@
-import pycurl, urllib, sys, json
+import pycurl, urllib, sys, json, cStringIO
 from urllib import urlencode
 from ConfigParser import ConfigParser
 
@@ -32,12 +32,16 @@ class Curl ():
 		return self.curlrequest('delete', url, data)
 
 	def curlrequest(self, method,url,data=None):
+		response = cStringIO.StringIO()
+
 		self.request = pycurl.Curl()
 		self.httpLogin()
 		self.setRequestMethod(method,data)
 		self.setRequestOptions(url)
+		self.request.setopt(self.request.WRITEFUNCTION, response.write)
 		self.request.perform()
 		self.request.close()
+		return response.getvalue()
 		# self.curl_storage.append(curl)
 
 	def setRequestMethod(self,method,data=None):
