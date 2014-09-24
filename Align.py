@@ -1,59 +1,44 @@
-from Align.Curl import Curl
-from Align.SqliteSession import SqliteSession
-import sys, os
+from Align.Module import Module
+from datetime import datetime, date, time
+import sys, os, time
 
 def main():
-	cl = SqliteSession()
-	
-	cl.getAccessToken()
+	mod = Module()
 
-	# cl = Curl()
+	create_product_data = {
+		'product_name' 			: 'Python Lib Product 1',
+		'product_description'	: 'Python Lib Product 1',
+		'product_price' 		: 20,
+		'product_shipping' 		: 10
+	}
+	# print mod.product('list')
+	# print mod.product('info','c0wtkZonrfeXWTzayAHY')
+	# print mod.product('create',create_product_data)
 
-	# cl.get('products','42ztNrSxchJFTBDA6Avh')
+	create_invoice_data = {
+		'checkout_type' : 'btc',
+		'products' : [{
+			'product_name' 		: 'Invoice prod1',
+			'product_price' 	: '1',
+			'quantity' 			: '1',
+			'product_shipping' 	: '1'
+		}]
+		[],
+		'buyer_info'	: {
+			'first_name' : 'Invoice buyer1',
+			'last_name'  : 'Invoice buyer1',
+			'email'		 : 'invoicebuyer1@mail.com',
+			'address_1'  : 'Invoice buyer1',
+			'address_2'  : 'Invoice buyer1'
+		}
+	}
+	# print type(create_invoice_data)
+	# sys.exit()
+	# print type(create_invoice_data)
 
-	# cl.get('http://localhost:8000/')
-	# cl.get('products')
-	# cl.get('products','ZgAshovYZi1N9L43HVUW')
-	# create = {
-	# 	'first_name'		: 'Python Two',
-	# 	'last_name'			: 'Test Two',
-	# 	'email'				: 'testtwo@mail.com',
-	# 	'address_1'			: 'required',
-	# 	'address_2'			: 'required',
-	# 	'address_number'	: 'required',
-	# 	'address_city'		: 'required',
-	# 	'address_state'		: 'required',
-	# 	'address_zip'		: 'required',
-	# 	'address_country'	: 'required',
-	# 	'address_phone'		: 'require'
-	# }
-	# print(create)
-
-	# create = {
-	# 	'product_name' 			: 'Python Product 2',
-	# 	'product_description'	: 'Python Product 2',
-	# 	'product_price' 		: 20,
-	# 	'product_shipping' 		: 10
-	# }
-
-	# cl.post('products',create)
-
-	# update = {
-	# 	'id' : '42ztNrSxchJFTBDA6Avh',
-	# 	'data' : {	
-	# 		'product_name' 			: 'Python Product 2sss',
-	# 		'product_description'	: 'Python Product 2sss',
-	# 		'product_price' 		: 20,
-	# 		'product_shipping' 		: 10
-	# 	}
-	# }
-
-	# cl.put('products',update)
-	
-	# cl.get('products','nFYNjcTcjotiIvPXoZwD')
-	# cl.get('products','42ztNrSxchJFTBDA6Avh')
-	# print("\n")
+	# print mod.invoice('list')
+	# print mod.invoice('info','DkUph8nMYr4pySINqaDD')
+	print mod.invoice('create',create_invoice_data)
 
 if __name__ == "__main__":
     main()
-    # print( os.getcwd() )
