@@ -27,7 +27,7 @@ class SqliteSession():
         self.path = os.path.join(os.getcwd()+self.config('sessionpath'))
         self.db   = self.config('dbname')
 
-        #create db if file doesn't exist
+        """ Create db if file doesn't exist """
         if not os.path.exists(self.path+self.db):
             with self.dbconn() as conn:
                 conn.execute(self.sql_create_tbl)

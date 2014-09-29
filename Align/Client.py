@@ -3,7 +3,7 @@ from SqliteSession import SqliteSession
 import json, sys, inspect
 from urllib import urlencode
 
-class Module():
+class Client():
 
 	def __init__(self):
 
