@@ -5,7 +5,7 @@ from urllib import urlencode
 
 class Client():
 
-	def __init__(self):
+	def __init__(self, client_id, secret_key):
 
 		""" Check session """
 		self.session = SqliteSession()
@@ -16,7 +16,7 @@ class Client():
 			res = self.session.get(client_id)
 		else:
 			""" Request new access token and store it to sqlite session """
-			self.getAccessToken()
+			self.getAccessToken(client_id, secret_key)
 			res = self.session.get(client_id)
 
 		self.access_token = res[0]
@@ -26,7 +26,7 @@ class Client():
 
 		""" Request new access token and store it to sqlite session """
 		if ( is_expired ):
-			self.getAccessToken()
+			self.getAccessToken(client_id, secret_key)
 
 	def request(self, method, url, data=None):
 		"""
@@ -123,15 +123,15 @@ class Client():
 
 		return res
 
-	def getAccessToken(self):
+	def getAccessToken(self, client_id, secret_key):
 		"""
 		Request access token and saves it in sqlite session
 		"""
 		c = Curl()
 		param = {
 			'grant_type'    : self.session.config('granttype'),
-			'client_id'     : self.session.config('clientid'),
-			'client_secret' : self.session.config('secretkey'),
+			'client_id'     : client_id,
+			'client_secret' : secret_key,
 			'scope'         : self.session.config('scope')
 		}
 
