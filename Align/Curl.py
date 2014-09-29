@@ -13,23 +13,14 @@ class Curl ():
 		self.authBasicUsername  = self.config('username')
 		self.authBasicPassword  = self.config('password')
 
-	def get(self, module=None, data=None):
-		url = self.cleanUrl(module,data)
-		return self.curlrequest('get', url, data)
+	def get(self, url, data=None):
+		return self.curlrequest('get', self.url+url+'?'+urlencode(data), data)
 
-	def post(self, module=None, data=None):
-		url = self.cleanUrl(module)
-		return self.curlrequest('post', url, data)
+	def post(self, url, data=None):
+		return self.curlrequest('post', self.url+url, data)
 
-	def put(self,module=None,data=None):
-		id 	 = data['id']
-		data = data['data']
-		url  = self.cleanUrl(module,id)
-		return self.curlrequest('put', url, data)
-
-	def delete(self,module=None,data=None):
-		url = self.cleanUrl(module)
-		return self.curlrequest('delete', url, data)
+	def put(self, url, data=None):
+		return self.curlrequest('put', self.url+url, data)
 
 	def curlrequest(self, method,url,data=None):
 		response = cStringIO.StringIO()
@@ -42,7 +33,6 @@ class Curl ():
 		self.request.perform()
 		self.request.close()
 		return response.getvalue()
-		# self.curl_storage.append(curl)
 
 	def setRequestMethod(self,method,data=None):
 		method = method.upper()
@@ -50,16 +40,28 @@ class Curl ():
 		if (method == 'GET'):
 			self.request.setopt(pycurl.HTTPGET, True)
 		elif (method == 'POST'):
-			data = urlencode(data)
+			# data = urlencode(data)
+			data = json.dumps(data)
+
 			self.request.setopt(pycurl.CUSTOMREQUEST, method)
 			self.request.setopt(pycurl.POST, True)
 			self.request.setopt(pycurl.POSTREDIR,3)
 			self.request.setopt(pycurl.POSTFIELDS, data)
+			self.request.setopt(pycurl.HTTPHEADER, [
+				'Accept: application/json',
+				'Content-Type: application/json; charset=utf-8',
+				'Connection: Keep-Alive'])
+
 		elif (method == 'PUT'):
-			data = urlencode(data)
+			# data = urlencode(data)
+			data = json.dumps(data)
 			self.request.setopt(pycurl.CUSTOMREQUEST, method)
 			self.request.setopt(pycurl.POST, True)
 			self.request.setopt(pycurl.POSTFIELDS, data)
+			self.request.setopt(pycurl.HTTPHEADER, [
+				'Accept: application/json',
+				'Content-Type: application/json; charset=utf-8',
+				'Connection: Keep-Alive'])
 		elif (method == 'DELETE'):
 			self.request.setopt(pycurl.CUSTOMREQUEST, method)
 
@@ -75,11 +77,6 @@ class Curl ():
 		config = ConfigParser()
 		config.read('Align/config.ini')
 		return config.get('apiConfig',option)
-
-	def cleanUrl(self,module,data=None):
-		url = self.url + module if module != None else self.url
-		url = url + '/' + data if data != None else url
-		return url
 
 
 

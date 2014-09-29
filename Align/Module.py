@@ -1,65 +1,141 @@
 from Curl import Curl
 from SqliteSession import SqliteSession
 import json, sys, inspect
+from urllib import urlencode
 
 class Module():
 
 	def __init__(self):
 
 		#check session
-		session = SqliteSession()
-		
-		client_id = session.config('clientid')
+		self.session = SqliteSession()
+		client_id 	 = self.session.config('clientid')
 
-		#check if clientid in session exists
-		if( session.get(client_id) ):
-			res = session.get(client_id)
+		if( self.session.get(client_id) ):
+			#get access token from sqlite session
+			res = self.session.get(client_id)
 		else:
-			session.getAccessToken()
-			res = session.get(client_id)
+			#request new access token and store it to sqlite session
+			self.getAccessToken()
+			res = self.session.get(client_id)
 
-		is_expired = session.isTokenExpired(res[0])
+		self.access_token = res[0]
+		self.expiry 	  = res[2]
 
-		if ( is_expired):
-			session.getAccessToken()
+		is_expired = self.session.isTokenExpired(self.expiry)
 
-	def request(self,module,method,data=None):
+		#request new access token and store it to sqlite session
+		if ( is_expired ):
+			self.getAccessToken()
+
+	def request(self, method, url, data=None):
+		"""
+		Generic request
+		@parameter method: get, put, post
+		@parameter url: api url'
+		@parameter data: data for post and put method
+		"""
 		curl = Curl()
 
+		if data is not None:
+			data['access_token'] = self.access_token
+		else:
+			data = { 'access_token' : self.access_token }
+
 		if( method == 'post' ):
-			res = curl.post(module,data)
+			res = curl.post(url,data)
+
 		elif( method == 'put' ):
-			res = curl.get(module,data)
+			res = curl.put(url,data)
+
 		else:
-			res = curl.get(module,data)
+			res = curl.get(url,data)
 
 		return res
 
-	def invoice(self,method,data=None):
+	def buyer(self,method,data=None,param=None):
+		"""
+		Buyer method
+		@parameter method: list, info, create
+		@parameter data: accepts str or dict
+		@parameter param: accepts dict
+		"""
 		res = None
 
-		if( method == 'info' ):
+		if( method == 'list' ):
+			res = self.request('get','buyer/')
+
+		elif( method == 'info' ):
 			if ( type(data).__name__ == 'str' ):
-				res = self.request('invoice','get',data)
+				res = self.request('get','buyer/'+data)
+
 		elif( method == 'create' ):
 			if ( type(data).__name__ == 'dict' ):
-				res = self.request('invoice','post',data)
-		else:
-			res = self.request('invoice','get')
+				res = self.request('post','buyer/',data)
 
 		return res
 
-	def product(self,method,data=None):
+	def invoice(self,method,data=None,param=None):
+		"""
+		Invoice method
+		@parameter method: list, info, create
+		@parameter data: it accepts str or dict
+		@parameter param: accepts dict
+		"""
 		res = None
 
-		if( method == 'info' ):
+		if( method == 'list' ):
+			res = self.request('get','invoice/')
+
+		elif( method == 'info' ):
 			if ( type(data).__name__ == 'str' ):
-				res = self.request('products','get',data)
+				res = self.request('get','invoice/'+data)
+
 		elif( method == 'create' ):
 			if ( type(data).__name__ == 'dict' ):
-				res = self.request('products','post',data)
-		else:
-			res = self.request('products','get')
+				res = self.request('post','invoice/',data)
 
 		return res
+
+	def product(self,method,data=None,param=None):
+		"""
+		Product method
+		@parameter method: list, info, create
+		@parameter data: it accepts str or dict
+		@parameter param: accepts dict
+		"""
+		res = None
+
+		if( method == 'list' ):
+			res = self.request('get','products/')
+
+		elif( method == 'info' ):
+			if ( type(data).__name__ == 'str' ):
+				res = self.request('get','products/'+data)
+
+		elif( method == 'update' ):
+			if ( type(data).__name__ == 'str' and type(param).__name__ == 'dict' ):
+				res = self.request('put','products/'+data,param)
+
+		elif( method == 'create' ):
+			if ( type(data).__name__ == 'dict' ):
+				res = self.request('post','products/',data)
+
+		return res
+
+	def getAccessToken(self):
+		"""
+		Request access token and saves it in sqlite session
+		"""
+		c = Curl()
+		param = {
+			'grant_type'    : self.session.config('granttype'),
+			'client_id'     : self.session.config('clientid'),
+			'client_secret' : self.session.config('secretkey'),
+			'scope'         : self.session.config('scope')
+		}
+
+		res = json.loads(c.post('oauth/access_token',param))
+
+		return self.session.create(res)
 

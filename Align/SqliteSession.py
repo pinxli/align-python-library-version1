@@ -17,7 +17,8 @@ class SqliteSession():
         """
     )
     sql_create  = 'INSERT INTO session VALUES (?,?,?)'
-    sql_get     = 'SELECT expiry FROM session WHERE client_id = ?'
+    sql_delete  = 'DELETE FROM session WHERE client_id = ?'
+    sql_get     = 'SELECT * FROM session WHERE client_id = ?'
 
     def __init__(self):
 
@@ -33,59 +34,43 @@ class SqliteSession():
                 self.new = True
 
     def config(self,option):
+        """ Reads config file """
         config = ConfigParser()
         config.read('Align/config.ini')
         return config.get('apiConfig',option)
 
-    #db connection
     def dbconn(self):
+        """ Database connection """
         if not self.conn:
             self.conn = sqlite3.Connection(self.path+self.db)
         return self.conn
 
-    #db close
     def dbclose(self):
+        """ Close database connection """
         self.conn.close()
 
-    #get session data
     def get(self,client_id):
+        """ Get session data """
         conn = self.dbconn().cursor()
         conn.execute(self.sql_get,(client_id,))
         return conn.fetchone()
 
-    #create session data
-    def create(self,data):        
+    def create(self,data):  
+        """ Create session data """      
         with self.dbconn() as conn:
+            conn.execute(self.sql_delete,(self.config('clientid'),))
             conn.execute(self.sql_create,(data['access_token'], self.config('clientid'), data['expires']))
             self.conn.commit()
 
-    #convert timestamp to Y-m-d H:i:s date format
     def convertTimestamp(self,timestamp):
+        """ Convert timestamp to Y-m-d H:i:s date format """
         value = datetime.fromtimestamp(timestamp)
         return value.strftime('%Y-%m-%d %H:%M:%S')
 
     #check if token is expired
     def isTokenExpired(self,timestamp):
-        #timestamp
+        """ Check if access token is expired (expiry date is in timestamp format)"""
         expiry  = datetime.fromtimestamp( int(timestamp) )
         now     = datetime.fromtimestamp( int(time.time()) )
 
         return expiry < now
-
-    #request new access token
-    def getAccessToken(self):
-        c = Curl()
-        param = {
-            'grant_type'    : self.config('granttype'),
-            'client_id'     : self.config('clientid'),
-            'client_secret' : self.config('secretkey'),
-            'scope'         : self.config('scope')
-        }
-
-        res = json.loads(c.post('oauth/access_token',param))
-        
-        return self.create(res)
-        # if self.new:
-        #     return self.create(res)
-        # else:
-        #     return self.new
