@@ -7,15 +7,15 @@ class Module():
 
 	def __init__(self):
 
-		#check session
+		""" Check session """
 		self.session = SqliteSession()
 		client_id 	 = self.session.config('clientid')
 
 		if( self.session.get(client_id) ):
-			#get access token from sqlite session
+			""" Get access token from sqlite session """
 			res = self.session.get(client_id)
 		else:
-			#request new access token and store it to sqlite session
+			""" Request new access token and store it to sqlite session """
 			self.getAccessToken()
 			res = self.session.get(client_id)
 
@@ -24,7 +24,7 @@ class Module():
 
 		is_expired = self.session.isTokenExpired(self.expiry)
 
-		#request new access token and store it to sqlite session
+		""" Request new access token and store it to sqlite session """
 		if ( is_expired ):
 			self.getAccessToken()
 
